@@ -1,0 +1,8 @@
+Flask
+tensorflow
+numpy
+werkzeug
+shap
+lime
+scikit-image
+opencv-python

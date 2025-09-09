@@ -1,0 +1,10 @@
+Deepfake_detector_flask/
+│
+├── app.py
+├── model/
+│   └── deepfake_detector_model.h5  # Your trained model saved here
+├── templates/
+│   └── index.html
+├── static/
+│   └── uploads/                    # Folder to save uploaded images
+└── requirements.txt
