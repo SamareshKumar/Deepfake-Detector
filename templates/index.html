@@ -1,309 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Deepfake Detector</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Detector with XAI</title>
     <style>
-        /* Reset and base */
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            align-items: center;
-        }
-        .container {
-            background: white;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            max-width: 480px;
-            width: 100%;
-            text-align: center;
-        }
-        h1 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-        /* Drag and drop area */
-        #drop-area {
-            border: 3px dashed #bbb;
-            border-radius: 12px;
-            padding: 40px;
-            cursor: pointer;
-            transition: border-color 0.3s ease;
-            color: #666;
-            font-size: 18px;
-            margin-bottom: 20px;
-            background: #fafafa;
-        }
-        #drop-area.highlight {
-            border-color: #4a90e2;
-            background: #e6f0ff;
-            color: #2a5db0;
-        }
-        #fileElem {
-            display: none;
-        }
-        button {
-            background-color: #4a90e2;
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-        }
-        button:disabled {
-            background-color: #a0b9e8;
-            cursor: not-allowed;
-        }
-        button:hover:not(:disabled) {
-            background-color: #357abd;
-        }
-        /* Result */
-        .result {
-            margin-top: 25px;
-            text-align: center;
-        }
-        .result img {
-        width: 200px;
-        height: 200px;
-        border-radius: 12px;
-        margin-top: 15px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        object-fit: contain; /* maintain aspect ratio, show entire image */
-        background-color: #f8f8f8; /* optional: light background inside box */
-        border: 1px solid #ddd; /* optional: subtle border */
-        }
-
-        
-        .badge {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 18px;
-            margin-top: 10px;
-            color: white;
-        }
-        .badge.real {
-            background-color: #28a745;
-        }
-        .badge.fake {
-            background-color: #dc3545;
-        }
-        /* Loading spinner */
-        .spinner {
-            margin: 20px auto;
-            width: 40px;
-            height: 40px;
-            border: 5px solid #eee;
-            border-top: 5px solid #4a90e2;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            display: none;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        /* Error message */
-        .error {
-            color: #dc3545;
-            margin-top: 15px;
-            font-weight: 600;
-        }
-        .result img {
-    width: 200px;
-    height: 200px;
-    border-radius: 12px;
-    margin-top: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    object-fit: contain; /* maintain aspect ratio, show entire image */
-    background-color: #f8f8f8; /* optional: light background inside box */
-    border: 1px solid #ddd; /* optional: subtle border */
-}
-
-        /* Responsive */
-        @media (max-width: 520px) {
-            .container {
-                padding: 20px;
-            }
-            #drop-area {
-                padding: 30px;
-                font-size: 16px;
-            }
-        }
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #0056b3; }
+        .upload-section { margin-bottom: 30px; padding: 20px; border: 1px dashed #ccc; border-radius: 5px; background-color: #e9f7ff; }
+        .prediction-section, .xai-section { margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; }
+        .result-item { margin-bottom: 10px; }
+        .error { color: red; font-weight: bold; }
+        img.uploaded-image { max-width: 100%; height: auto; display: block; margin-top: 15px; border: 1px solid #eee; }
+        img.xai-image { max-width: 100%; height: auto; display: block; margin-top: 10px; border: 1px solid #eee; }
+        pre { background-color: #eee; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .flex-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .flex-item { flex: 1; min-width: 300px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Deepfake Detector</h1>
+        <h1>Deepfake Detector with XAI</h1>
 
-        <div id="drop-area">
-            <div id="drop-instructions">
-                <p>Drag & Drop an image here or <label for="fileElem" style="color:#4a90e2; cursor:pointer;">browse</label></p>
+        <div class="upload-section">
+            <p>Upload an image to detect if it's a deepfake and get explanations.</p>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".png, .jpg, .jpeg">
+                <input type="submit" value="Upload and Analyze">
+            </form>
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+        </div>
+
+        {% if original_image_url %}
+            <h2>Original Image</h2>
+            <img src="{{ original_image_url }}" alt="Uploaded Image" class="uploaded-image">
+        {% endif %}
+
+        {% if prediction_info %}
+            <div class="prediction-section">
+                <h2>Prediction Result</h2>
+                <div class="result-item">
+                    <strong>Label:</strong> {{ prediction_info.label }}
+                </div>
+                <div class="result-item">
+                    <strong>Confidence:</strong> {{ prediction_info.confidence }}%
+                </div>
+                <div class="result-item">
+                    <strong>Raw Prediction Score:</strong> {{ '%.4f' % prediction_info.raw_prediction }}
+                </div>
+                <div class="result-item">
+                    <strong>Textual Explanation:</strong> {{ xai_results.textual_explanation | safe }}
+                </div>
             </div>
-            <img id="previewImgDrop" src="" alt="Preview" style="display:none; width:100%; max-width:220px; height:auto; border-radius:12px; margin:0 auto; box-shadow:0 4px 12px rgba(0,0,0,0.1); background-color:#f8f8f8; border:1px solid #ddd;" />
-            <input type="file" id="fileElem" accept="image/*" />
-        </div>
+        {% endif %}
 
-        <button id="uploadBtn" disabled>Upload and Predict</button>
+        {% if xai_results and not xai_results.error %}
+            <div class="xai-section">
+                <h2>XAI Explanations</h2>
 
-        <div class="spinner" id="spinner"></div>
+                <h3>Uncertainty Quantification</h3>
+                <div class="result-item">
+                    <strong>Certainty Score:</strong> {{ '%.2f' % xai_results.uncertainty.certainty_score }}
+                </div>
+                <div class="result-item">
+                    <strong>Uncertainty Score:</strong> {{ xai_results.uncertainty.uncertainty_score }}%
+                </div>
+                <div class="result-item">
+                    <small>{{ xai_results.uncertainty.explanation }}</small>
+                </div>
 
-        <div class="error" id="errorMsg"></div>
+                <div class="flex-container">
+                    <div class="flex-item">
+                        <h3>LIME Explanation</h3>
+                        <p>{{ xai_results.lime_explanation_text }}</p>
+                        {% if xai_results.lime_explanation_img_base64 %}
+                            <img src="data:image/png;base64,{{ xai_results.lime_explanation_img_base64 }}" alt="LIME Explanation" class="xai-image">
+                        {% else %}
+                            <p>No LIME image generated.</p>
+                        {% endif %}
+                    </div>
 
-        <div class="result" id="result" style="display:none;">
-            <div id="labelBadge" class="badge"></div>
-            <p>Confidence: <span id="confidence"></span>%</p>
-            <img id="previewImg" src="" alt="Uploaded Image" />
-        </div>
+                    <div class="flex-item">
+                        <h3>SHAP Explanation</h3>
+                        <p>{{ xai_results.shap_explanation_text }}</p>
+                        {% if xai_results.shap_explanation_img_base64 %}
+                            <img src="data:image/png;base64,{{ xai_results.shap_explanation_img_base64 }}" alt="SHAP Explanation" class="xai-image">
+                        {% else %}
+                            <p>No SHAP image generated.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
-
-    <script>
-        const dropArea = document.getElementById('drop-area');
-        const fileInput = document.getElementById('fileElem');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const spinner = document.getElementById('spinner');
-        const errorMsg = document.getElementById('errorMsg');
-        const resultDiv = document.getElementById('result');
-        const labelBadge = document.getElementById('labelBadge');
-        const confidenceSpan = document.getElementById('confidence');
-        const previewImg = document.getElementById('previewImg');
-        const previewImgDrop = document.getElementById('previewImgDrop');
-        const dropInstructions = document.getElementById('drop-instructions');
-
-        let selectedFile = null;
-
-        // Prevent default drag behaviors
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, preventDefaults, false);
-            document.body.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        // Highlight drop area when item is dragged over it
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'), false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'), false);
-        });
-
-        // Handle dropped files
-        dropArea.addEventListener('drop', handleDrop, false);
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            if (files.length) {
-                handleFiles(files);
-            }
-        }
-
-        // Handle file input change
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length) {
-                handleFiles(fileInput.files);
-            }
-        });
-
-        function handleFiles(files) {
-            const file = files[0];
-            if (!file) return;
-
-            if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
-                showError('Only JPG and PNG images are allowed.');
-                resetSelection();
-                return;
-            }
-
-            selectedFile = file;
-            errorMsg.textContent = '';
-            uploadBtn.disabled = false;
-
-            // Show preview in drop area
-            const reader = new FileReader();
-            reader.onload = e => {
-                previewImgDrop.src = e.target.result;
-                previewImgDrop.style.display = 'block';
-                dropInstructions.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-
-            // Clear previous results
-            resultDiv.style.display = 'none';
-            labelBadge.textContent = '';
-            confidenceSpan.textContent = '';
-        }
-
-        uploadBtn.addEventListener('click', () => {
-            if (!selectedFile) return;
-
-            uploadBtn.disabled = true;
-            spinner.style.display = 'block';
-            errorMsg.textContent = '';
-            resultDiv.style.display = 'none';
-
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-
-            fetch('/predict', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                spinner.style.display = 'none';
-                uploadBtn.disabled = false;
-
-                if (data.error) {
-                    showError(data.error);
-                    return;
-                }
-
-                // Show results
-                labelBadge.textContent = data.label;
-                labelBadge.className = 'badge ' + (data.label.toLowerCase() === 'real' ? 'real' : 'fake');
-                confidenceSpan.textContent = data.confidence;
-                previewImg.src = `/static/uploads/${data.filename}`;
-                previewImg.style.display = 'block';
-                resultDiv.style.display = 'block';
-            })
-            .catch(() => {
-                spinner.style.display = 'none';
-                uploadBtn.disabled = false;
-                showError('An error occurred. Please try again.');
-            });
-        });
-
-        function showError(msg) {
-            errorMsg.textContent = msg;
-        }
-
-        function resetSelection() {
-            selectedFile = null;
-            uploadBtn.disabled = true;
-            previewImgDrop.style.display = 'none';
-            dropInstructions.style.display = 'block';
-            previewImg.style.display = 'none';
-            resultDiv.style.display = 'none';
-        }
-    </script>
 </body>
 </html>

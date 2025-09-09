@@ -1,8 +1,9 @@
-Flask
-tensorflow
+tensorflow>=2.0.0
 numpy
-werkzeug
-shap
-lime
+Pillow
 scikit-image
 opencv-python
+shap>=0.40.0
+lime>=0.2.0.1
+Flask>=2.0.0
+werkzeug>=2.0.0

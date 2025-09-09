@@ -1,10 +1,9 @@
-Deepfake_detector_flask/
-│
+Deepfake_detector_root/
 ├── app.py
+├── enhanced_model.py
+├── requirements.txt
+├── how_to_run.txt
 ├── model/
-│   └── deepfake_detector_model.h5  # Your trained model saved here
-├── templates/
-│   └── index.html
-├── static/
-│   └── uploads/                    # Folder to save uploaded images
-└── requirements.txt
+│   └── deepfake_detector_model.h5  (Your trained Keras model goes here)
+└── templates/
+    └── index.html                 (Your HTML template for the web interface)

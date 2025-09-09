@@ -1,0 +1,17 @@
+1. Save the provided `enhanced_model.py`, `app.py`, `requirements.txt`, and the `index.html` file (inside a `templates` folder) into the same directory.
+   - Create a folder named `templates` and place `index.html` inside it.
+   - Create a folder named `model` in the root directory.
+
+2. Place your trained Deepfake Detector model (e.g., `deepfake_detector_model.h5`) into the `model` folder.
+   - The model should be a Keras model saved as an H5 file.
+   - It should be trained for binary classification, outputting a single probability (e.g., using `sigmoid` activation for the last layer) for the 'fake' class.
+
+3. Install the required Python packages:
+   pip install -r requirements.txt
+
+4. Run the Flask application:
+   python app.py
+
+5. Open your web browser and navigate to `http://127.0.0.1:5000/`.
+
+6. Upload an image to test the Deepfake Detector and view the XAI explanations.
