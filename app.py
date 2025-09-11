@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import os
 from werkzeug.utils import secure_filename
-from enhanced_model import enhanced_model # Import the instantiated model
+import tensorflow as tf
+from tensorflow import keras
+import numpy as np
 import json # For pretty printing JSON in debug
 
 app = Flask(__name__)
@@ -13,6 +15,19 @@ app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['XAI_FOLDER'], exist_ok=True)
 
+# Load Keras model
+MODEL_PATH = 'model/deepfake_detector_model.keras'
+model = keras.models.load_model(MODEL_PATH)
+
+# Helper function for preprocessing
+from PIL import Image
+
+def preprocess_image(filepath):
+    img = Image.open(filepath).convert('RGB')
+    img = img.resize((224, 224)) # Change size if needed
+    arr = np.array(img) / 255.0
+    arr = np.expand_dims(arr, axis=0)
+    return arr
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -30,15 +45,20 @@ def predict_json():
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
-        prediction_result, error = enhanced_model.predict(filepath)
-        if error:
-            return jsonify({'error': error}), 500
-        return jsonify({
-            'filename': filename,
-            'label': prediction_result['label'],
-            'confidence': prediction_result['confidence'],
-            'raw_prediction': prediction_result['raw_prediction']
-        })
+        try:
+            img_arr = preprocess_image(filepath)
+            preds = model.predict(img_arr)
+            confidence = float(np.max(preds))
+            label = 'Real' if np.argmax(preds) == 0 else 'Fake'
+            raw_prediction = preds.tolist()
+            return jsonify({
+                'filename': filename,
+                'label': label,
+                'confidence': round(confidence * 100, 2),
+                'raw_prediction': raw_prediction
+            })
+        except Exception as error:
+            return jsonify({'error': str(error)}), 500
     else:
         return jsonify({'error': 'Allowed file types are png, jpg, jpeg'}), 400
 
@@ -62,16 +82,19 @@ def index():
             file.save(filepath)
             original_image_url = url_for('uploaded_file', filename=filename)
 
-            # Use enhanced model for prediction and XAI
-            xai_results = enhanced_model.analyze_image_with_xai(filepath)
-            
-            if "error" in xai_results:
-                error_message = xai_results['error']
-            else:
-                prediction_info = xai_results['prediction']
-                # XAI image base64 strings will be passed directly
-                # You might want to remove the temporary file after processing if storage is a concern
-                # os.remove(filepath) 
+            # Use Keras model for prediction
+            try:
+                img_arr = preprocess_image(filepath)
+                preds = model.predict(img_arr)
+                confidence = float(np.max(preds))
+                label = 'Real' if np.argmax(preds) == 0 else 'Fake'
+                prediction_info = {
+                    'label': label,
+                    'confidence': round(confidence * 100, 2),
+                    'raw_prediction': preds.tolist()
+                }
+            except Exception as error:
+                error_message = str(error)
         else:
             if not error_message: # If no specific error was set yet
                 error_message = "Allowed file types are png, jpg, jpeg"

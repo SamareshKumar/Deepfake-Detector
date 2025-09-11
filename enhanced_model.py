@@ -16,7 +16,7 @@ import base64
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 class EnhancedModel:
-    def __init__(self, model_path='model/deepfake_detector_model.h5'):
+    def __init__(self, model_path='model/deepfake_detector_model.keras'):
         self.model_path = model_path
         try:
             # Custom objects might be needed if custom layers or loss functions are used

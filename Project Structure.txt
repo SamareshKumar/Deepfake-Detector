@@ -4,6 +4,6 @@ Deepfake_detector_root/
 ├── requirements.txt
 ├── how_to_run.txt
 ├── model/
-│   └── deepfake_detector_model.h5  (Your trained Keras model goes here)
+│   └── deepfake_detector_model.keras  (Your trained Keras model goes here)
 └── templates/
     └── index.html                 (Your HTML template for the web interface)

@@ -2,8 +2,8 @@
    - Create a folder named `templates` and place `index.html` inside it.
    - Create a folder named `model` in the root directory.
 
-2. Place your trained Deepfake Detector model (e.g., `deepfake_detector_model.h5`) into the `model` folder.
-   - The model should be a Keras model saved as an H5 file.
+2. Place your trained Deepfake Detector model (e.g., `deepfake_detector_model.keras`) into the `model` folder.
+   - The model should be a Keras model saved as a `.keras` file (not `.h5`).
    - It should be trained for binary classification, outputting a single probability (e.g., using `sigmoid` activation for the last layer) for the 'fake' class.
 
 3. Install the required Python packages:
